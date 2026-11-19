@@ -1,0 +1,14 @@
+# Copia este archivo a .env (cp .env.example .env). El .env real NO se versiona.
+
+# Credenciales de PostgreSQL (solo para desarrollo local)
+POSTGRES_USER=app
+POSTGRES_PASSWORD=app_password
+POSTGRES_DB=walking_skeleton
+
+# Puertos publicados en tu máquina (cámbialos si ya están ocupados)
+DB_PORT=5432
+API_PORT=3000
+WEB_PORT=5173
+
+# Pon true si el hot-reload no detecta cambios (p. ej. Docker en Windows/WSL)
+WATCH_POLLING=false

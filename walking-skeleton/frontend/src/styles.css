@@ -1,0 +1,201 @@
+/* Variables de color: un solo lugar para el tema claro y oscuro. */
+:root {
+  --bg: #f5f6f8;
+  --card: #ffffff;
+  --text: #1d2330;
+  --muted: #667085;
+  --border: #e3e6eb;
+  --accent: #2f6fde;
+  --accent-text: #ffffff;
+  --ok: #1f9d55;
+  --down: #d64545;
+  --checking: #d9a21b;
+  --error-bg: #fdecec;
+
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12151b;
+    --card: #1b2029;
+    --text: #e6e9ef;
+    --muted: #98a2b3;
+    --border: #2c3340;
+    --accent: #5b8ff0;
+    --error-bg: #3a1f22;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+}
+
+.container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.75rem;
+}
+
+h2 {
+  margin: 0 0 12px;
+  font-size: 1.1rem;
+}
+
+.subtitle,
+.muted {
+  color: var(--muted);
+}
+
+.subtitle {
+  margin: 4px 0 20px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+/* Panel de estado */
+.status-list,
+.item-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+}
+
+.status-row + .status-row {
+  border-top: 1px solid var(--border);
+}
+
+.status-name {
+  font-weight: 600;
+  flex: 1;
+}
+
+.status-label {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot--up { background: var(--ok); }
+.dot--down { background: var(--down); }
+.dot--checking { background: var(--checking); }
+
+/* Formulario */
+.item-form {
+  display: flex;
+  gap: 8px;
+}
+
+input {
+  flex: 1;
+  min-width: 0; /* permite que el input se encoja en pantallas pequeñas */
+  padding: 10px 12px;
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+button {
+  padding: 10px 16px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--accent-text);
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+button.link {
+  padding: 0;
+  color: var(--accent);
+  background: none;
+  text-decoration: underline;
+}
+
+.error {
+  margin: 12px 0 0;
+  padding: 8px 12px;
+  color: var(--down);
+  background: var(--error-bg);
+  border-radius: 8px;
+}
+
+/* Lista de items */
+.item-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+
+.item-title {
+  overflow-wrap: anywhere;
+}
+
+.item-list time {
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+/* En móvil, formulario y fecha pasan debajo para no apretar el texto. */
+@media (max-width: 480px) {
+  .item-form {
+    flex-direction: column;
+  }
+
+  .item-list li {
+    flex-direction: column;
+    gap: 2px;
+  }
+}
+
+/* Oculta la etiqueta visualmente pero la mantiene para lectores de pantalla. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

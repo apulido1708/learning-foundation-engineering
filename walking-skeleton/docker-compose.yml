@@ -1,0 +1,75 @@
+# Walking skeleton en modo DESARROLLO: el código se monta como volumen y recarga solo.
+#
+# Orden de arranque: db -> api -> web. `depends_on` con `condition: service_healthy`
+# espera a que el healthcheck del servicio anterior pase, no solo a que el contenedor exista.
+#
+# Red: Compose crea una red interna donde cada servicio es accesible por su NOMBRE.
+# Por eso la API se conecta a `db:5432` y no a `localhost` (dentro de un contenedor,
+# localhost es el propio contenedor).
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app_password}
+      POSTGRES_DB: ${POSTGRES_DB:-walking_skeleton}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      # Los scripts de db/init SOLO corren cuando el volumen está vacío (primer arranque).
+      # Si cambias el esquema, recrea el volumen con `docker compose down -v`.
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    healthcheck:
+      # $$ evita que Compose interpole: la variable la resuelve el shell del contenedor.
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: ./backend
+    environment:
+      PORT: 3000
+      # El host es `db` (nombre del servicio), no localhost.
+      DATABASE_URL: postgres://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-app_password}@db:5432/${POSTGRES_DB:-walking_skeleton}
+      # tsx watch usa chokidar, que respeta esta variable: mismo interruptor que el frontend
+      # por si los cambios de archivos no llegan al contenedor.
+      CHOKIDAR_USEPOLLING: ${WATCH_POLLING:-false}
+    volumes:
+      # Montamos el código para tener hot-reload...
+      - ./backend:/app
+      # ...y este volumen anónimo "tapa" /app/node_modules para que el montaje anterior
+      # no lo reemplace con el node_modules de tu máquina (o con nada).
+      - /app/node_modules
+    ports:
+      - "${API_PORT:-3000}:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  web:
+    build: ./frontend
+    environment:
+      # El proxy de Vite corre DENTRO del contenedor, por eso apunta a `api`, no a localhost.
+      API_PROXY_TARGET: http://api:3000
+      WATCH_POLLING: ${WATCH_POLLING:-false}
+    volumes:
+      - ./frontend:/app
+      # Mismo truco: protege el node_modules (Linux) instalado en la imagen.
+      - /app/node_modules
+    ports:
+      - "${WEB_PORT:-5173}:5173"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  db-data:
